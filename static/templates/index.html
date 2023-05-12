@@ -1,22 +1,416 @@
-
-{{ define "index"}}
-
+<!doctype html>
 <html>
     <head>
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+       
+        <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title> Upload Files </title>
+    <!-- Bootstrap CSS -->
+   	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+	<link rel="stylesheet" href="static/assets/css/styles.css">
+	<link rel="stylesheet" href="static/assets/css/responsive.css">
+        <style>
+            body {
+              
+background: #F6F6F6;
+            }
+            .topnav {
+    background-color: white;
+    overflow: hidden;
+}
+
+/* Стиль ссылок внутри панели навигации */
+.topnav a {
+  float: left;
+  color:black;
+  text-align: center;
+  padding: 12px 13px;
+  text-decoration: none;
+  font-size: 25px;
+  margin-left: 7px;
+  margin-top: 5px;
+}
+
+
+/* Изменение цвета ссылок при наведении курсора */
+.topnav a:hover {
+  background-color: black;
+  color: white;
+}
+
+/* Добавить цвет для активной/текущей ссылки */
+.topnav a.active {
+  background-color: white;
+  color: white;
+}
+
+/* Выровненный по правому краю раздел внутри верхней навигации */
+.topnav-right , .input-group{
+  float: right;
+  display: flex;
+  padding: 13px 16px;
+
+}
+.sidepanel {
+  height: 500px; /* Укажите высоту */
+  width: 0; /* 0 ширина-измените это с помощью JavaScript */
+  position: fixed; /* Оставаться на месте */
+  z-index: 1; /* Оставайтесь на вершине */
+  top: 0;
+  left: 0;
+  background-color: #111; /* Черный */
+  overflow-x: hidden; /* Отключить горизонтальную прокрутку */
+  padding-top: 60px; /* Поместите содержимое 60px сверху */
+  transition: 0.5s; /* 0.5 секунды эффект перехода для скольжения в боковой панели */
+}
+
+/* Боковая панель ссылок */
+.sidepanel a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  
+  display: block;
+  transition: 0.3s;
+}
+
+/* При наведении курсора мыши на навигационные ссылки измените их цвет */
+.sidepanel a:hover {
+  color: #f1f1f1;
+}
+
+/* Положение и стиль кнопки закрытия (верхний правый угол) */
+.sidepanel .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+/* Стиль кнопка, которая используется для открытия боковой панели */
+.openbtn {
+  font-size: 20px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+body {
+  font-family: Verdana, sans-serif;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.row > .column {
+  padding: 0 8px;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.column {
+  float: left;
+  width: 25%;
+}
+
+/* Модальный (фон) */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  padding-top: 100px;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: black;
+}
+
+/* Модальное содержание */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  width: 90%;
+  max-width: 1200px;
+}
+
+/* Кнопка закрытия */
+.close {
+  color: white;
+  position: absolute;
+  top: 10px;
+  right: 25px;
+  font-size: 35px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #999;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.mySlides {
+  display: none;
+}
+
+.cursor {
+  cursor: pointer;
+}
+
+/* Кнопки вперед и назад */
+.prev,
+.next {
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  width: auto;
+  padding: 16px;
+  margin-top: -50px;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  transition: 0.6s ease;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Расположите кнопку "вперед" справа */
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* При наведении курсора добавьте черный цвет фона с небольшим количеством прозрачного */
+.prev:hover,
+.next:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Текст номера (1/3 и т.д.) */
+.numbertext {
+  color: #f2f2f2;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+
+img {
+  margin-bottom: -4px;
+}
+
+.caption-container {
+  text-align: center;
+  background-color: black;
+  padding: 2px 16px;
+  color: white;
+}
+
+.demo {
+  opacity: 0.6;
+}
+
+.active,
+.demo:hover {
+  opacity: 1;
+}
+
+img.hover-shadow {
+  transition: 0.3s;
+}
+
+.hover-shadow:hover {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+		
+		
+
+</style>
+
+  
+        <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+      <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+       -->
+      <style>
+          .all{
+                  display: flex;
+              }
+              .left{
+                 
+                  width: 65%;
+                  height: auto;
+                  padding-top: 60px;
+                  text-align: center;
+                  /* margin: 100px 100px 100px 100px; */
+                 
+               
+                  
+              }
+          .input{
+                 border-color: black;
+                 border-width: 2px;
+                 border-style: solid;
+                 width: 450px;
+                 height: 50px;
+                 border-radius: 6px;
+                 font-size: 20px;
+                 padding-left: 10px;
+             margin-top: 10px;
+          }
+          
+          
+          
+          
+          
+          
+     </style>
     </head>
 <body>
-       
-        <a href="/signup">Signup</a><br>
-        <a href="/login">Login</a><br>
-        <a href="/uploadfiles">uploadfiles</a><br>
+    
+          
+    <script>
+        function openNav() {
+  document.getElementById("mySidepanel").style.width = "250px";
+}
 
+/* Установите ширину боковой панели в 0 (скройте ее) */
+function closeNav() {
+  document.getElementById("mySidepanel").style.width = "0";
+}
+    </script>
+     <div id="mySidepanel" class="sidepanel">
+        <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+        <a href="/box">Korzina</a>
+        <a href="#">Услуги</a>
+        <a href="#">Клинты</a>
+        <a href="#">Контакт</a>
+      </div>
+    <div class="topnav">
+        <a class="active" href="#home">
+
+              
+              <button class="openbtn" onclick="openNav()">&#9776;  </button>
+              
+        <a class=" btn btn-outline-dark btn-sm" style="height: 50px; margin: 20px;" href="/login">log in</a>
+        <a class="btn btn-outline-dark btn-sm"  style="height: 50px; margin: 20px;" href="/signup">Join</a>
+        <div class="topnav-right">
+      
+
+          
+          <form class="input-group" method="get" action="https://en.wikipedia.org/w/index.php">
+            <input style="width: 400px;" type="text" class="form-control rounded" name="search" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+
+            <input type="submit" class="btn btn-outline-dark"/> 
+          </form>
+         
+          <a   href="/uploadfiles"><svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+            <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+            <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+          </svg></a>
         
-
-        ]
+    
+         
+          <a class="btn btn-outline-dark btn-sm"  href="/logout">Logout</a>	
+          
+         
+        </div>
+      </div>
+      <div style="width: 400px; border: 1px solid; margin: 20px; ">
+        <form style="margin: 20px;" method="post" action="/upload" >
+            <h3>To Filter Choose your  features:</h3>				
+            <input  type="checkbox"  value="raiting" name="raiting"><label for="raiting" checked="checked" >Raiting</label><br>
+            <input  type="checkbox"  value="price" name="price"><label for="price" checked="checked">Price</label><br>
+            <button type="submit" class="btn btn-primary">Submit</button>        
+        </form>
+        
+      </div>
+        
+    
+       
+      <div class="upload-wrap" id="myid">  
+  
+     
+        {{/* {{$length:= len . }} {{ if gt $length 0 }} */}}
+        {{/* {{ if gt .Count 0 }} */}}
+        {{if . }}
+      
+              
+         <div class="upload-list" >
+             
+                 
+           {{ range . }}
+                 
+                 <div class="ul-row flex" >
+                     {{/* {{else}}	 */}}
+                     <div class="up-img">
+                         <img src="{{ .Path }}">
+                     </div>
+                     <div class="up-extn">
+                      	
+                         <h4 class="flex">Title: {{ .Fname }} <span> Item type :{{ .Item_type }} </span>  </h4>
+                         <p> rating {{ .Star.Int32 }}</p>
+                         <p>price: {{ .Price }}$</p>
+                         <p>Comment: {{ .Comment.String }}</p>
+                         <div class="up-progress">
+                             <span class="w70"></span>
+                         </div>
+                         
+                         <form style="margin: 10px;" method="post" action="/star">
+                          
+                             <p>raiting 1-5</p>
+                             <select class="form-control" id="exampleFormControlSelect1" name="star">
+                                 <option>1</option>
+                                 <option>2</option>
+                                 <option >3</option>
+                                 <option>4</option>
+                                 <option>5</option>
+                             </select>
+                             <div class="form-group">
+                                 <label for="exampleFormControlTextarea1">write comments</label>
+                                 <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="comment"></textarea>
+                               </div>
+                             <input type="checkbox"  value="{{ .ID }}" name="id"><label for="id" checked="checked" />I agree</label><br>
+                             <button type="submit" class="btn btn-primary">Submit</button>  
+                             
+                         </form><a href="/buy?id={{ .ID }}" onclick="return confirm('Are you sure you want to Buy it?')" style="margin: 20px;" > Buy</a>	
+                       
+                         
+                      
+                         
+                         
+                     </div>
+                     
+                 </div>
+                 
+                 {{ end }}
+             
+                 
+             </div>
+                 {{ end }}
+     
+      </div>
+</script>
 </body>
-
 </html>
-
-{{ end }}

@@ -8,7 +8,7 @@
       
               
 
-             
+        {{if . }}  
                  
            {{ range . }}
                  
@@ -16,24 +16,30 @@
            <table class="table">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
+                    <th scope="col">ID</th>
                     <th scope="col">Title:</th>
                     <th scope="col">Item type</th>
                     <th scope="col">Handle</th>
                     <th scope="col">Rating </th>
                     <th scope="col">price:</th>
+                    <th scope="col">Drop</th>
+                   
+                
                   
                     
                   </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <th scope="row">1</th>
+                      <th scope="row">{{ .ID }}</th>
                       <td><img  style="width: 20px; height: 20px;" src="{{ .Path }}"></td>
                       <td>{{ .Fname }}</td>
                       <td>{{ .Item_type }}</td>
                       <td>{{ .Star.Int32 }}</td>
                       <td>{{ .Price }}$</td>
+                      <td><a href="/dele?id={{ .ID }}" onclick="return confirm('Are you sure you want to Drop it?')" > Delete</a></td>
+                 
+                 
                     </tr>
                 </tbody>
             </table>
@@ -41,6 +47,10 @@
         
 
                        
+                {{ end }}
+        {{ else }}
+            <h1>Opps the bokx is Emty!! </h1>
+   
         {{ end }}
      
     </body>

@@ -49,17 +49,25 @@ func CreateAconut(res http.ResponseWriter, req *http.Request) {
 			http.Error(res, "Server error, unable to create your account.", 500)
 			return
 		}
-		res.Write([]byte("User created!"))
-
-		return
 
 	case err != nil:
 		http.Error(res, "Server error, unable to create your account.", 500)
 		return
-	default:
-		http.Redirect(res, req, "/", 301)
+	}
+	if username != "" && password != "" && email != "" {
+
+		http.Redirect(res, req, "/login", 301)
+		res.Write([]byte("User created!"))
+
+		return
+	} else {
+		http.Redirect(res, req, "/signup", 301)
 	}
 	defer db.Close()
+}
+
+type UserAdmin struct {
+	User string
 }
 
 func loginPage(res http.ResponseWriter, req *http.Request) {
@@ -88,8 +96,8 @@ func loginPage(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	http.Redirect(res, req, "/", 301)
-	res.Write([]byte("Hello  " + databaseUsername))
+	http.Redirect(res, req, "/welcome", 301)
+
 	defer db.Close()
 }
 
@@ -97,18 +105,9 @@ func Logout(response http.ResponseWriter, request *http.Request) {
 	session, _ := store.Get(request, "mysession")
 	session.Options.MaxAge = -1
 	session.Save(request, response)
-	http.Redirect(response, request, "/loginIndex", http.StatusSeeOther)
+	http.Redirect(response, request, "/login", http.StatusSeeOther)
 }
 
-func index(w http.ResponseWriter, r *http.Request) {
-
-	t, err := template.ParseFiles("static/templates/index.html")
-	if err != nil {
-		fmt.Fprintf(w, err.Error())
-	}
-
-	t.Execute(w, "index")
-}
 func dbConn() (db *sql.DB) {
 
 	db, err = sql.Open("mysql", "root:root@/productdb")
@@ -192,9 +191,12 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	upld.Count = len(res)
 
 	if upld.Count > 0 {
-		tmpl.ExecuteTemplate(w, "uploadfile.html", res)
+
+		tmpl.ExecuteTemplate(w, "index.html", res)
+
 	} else {
-		tmpl.ExecuteTemplate(w, "uploadfile.html", nil)
+		http.Redirect(w, r, "index.html", 301)
+
 	}
 
 	db.Close()
@@ -253,7 +255,7 @@ func uploadFiles(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Successfully Uploaded File\n")
 		defer db.Close()
 
-		http.Redirect(w, r, "/", 301)
+		http.Redirect(w, r, "/welcome", 301)
 	}
 
 }
@@ -261,14 +263,14 @@ func delete(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
 	emp := r.URL.Query().Get("id")
 	log.Println("deleted successfully", emp)
-	delForm, err := db.Prepare("DELETE FROM upload WHERE id=?")
+	delForm, err := db.Prepare("DELETE FROM `korzina` WHERE id =?;")
 	if err != nil {
 		panic(err.Error())
 	}
 	delForm.Exec(emp)
 	log.Println("deleted successfully", emp)
 	defer db.Close()
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/upload", 301)
 }
 
 func star(w http.ResponseWriter, r *http.Request) {
@@ -289,78 +291,156 @@ func star(w http.ResponseWriter, r *http.Request) {
 	log.Println("Updated successfully", emp, star, com)
 
 	defer db.Close()
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/welcome", 301)
 }
-func Buy(w http.ResponseWriter, r *http.Request) {
+
+func welcome(w http.ResponseWriter, r *http.Request) {
 	db := dbConn()
-	emp := r.URL.Query().Get("id")
-	delForm, err := db.Prepare("DELETE FROM upload WHERE id=?")
+	var selDB *sql.Rows
+
+	if r.Method == "POST" {
+		rating := r.FormValue("raiting")
+		price := r.FormValue("price")
+
+		if rating == "raiting" {
+			sel, err := db.Query("SELECT * FROM `upload` ORDER BY star ASC")
+			selDB = sel
+			if err != nil {
+				panic(err.Error())
+			}
+		} else if price == "price" {
+			sel, err := db.Query("SELECT * FROM `upload` ORDER BY price ASC")
+			selDB = sel
+			if err != nil {
+				panic(err.Error())
+			}
+		} else {
+			sel, err := db.Query("SELECT * FROM upload ORDER BY id DESC")
+			selDB = sel
+			if err != nil {
+				panic(err.Error())
+			}
+		}
+	} else {
+		sel, err := db.Query("SELECT * FROM upload ORDER BY id DESC")
+		selDB = sel
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	upld := upfile{}
+	res := []upfile{}
+
+	for selDB.Next() {
+		var id, price int
+		var fname, item_type, path string
+		var comment sql.NullString
+		var star sql.NullInt32
+
+		err = selDB.Scan(&id, &fname, &item_type, &star, &path, &price, &comment)
+		if err != nil {
+			panic(err.Error())
+		}
+		upld.ID = id
+		upld.Fname = fname
+		upld.Item_type = item_type
+		upld.Star = star
+		upld.Path = path
+		upld.Price = price
+		upld.Comment = comment
+		res = append(res, upld)
+
+	}
+
+	upld.Count = len(res)
+
+	if upld.Count > 0 {
+		tmpl.ExecuteTemplate(w, "index.html", res)
+	} else {
+		tmpl.ExecuteTemplate(w, "index.html", nil)
+	}
+
+	db.Close()
+
+}
+func buy(w http.ResponseWriter, r *http.Request) {
+	db := dbConn()
+	log.Println("Log ")
+	b := r.URL.Query().Get("id")
+
+	delForm, err := db.Prepare("INSERT INTO korzina ( id ,fname, item_type, star, path,  price,  coment ) SELECT upload.id, upload.fname, upload.item_type,  upload.star, upload.path, upload.price, upload.comment  FROM  upload WHERE   upload.id = ?;")
 	if err != nil {
 		panic(err.Error())
 	}
-	delForm.Exec(emp)
-	log.Println("Updated successfully", emp)
+	delForm.Exec(b)
+	log.Println("deleted successfully", b)
 	defer db.Close()
-	http.Redirect(w, r, "/", 301)
+	http.Redirect(w, r, "/upload", 301)
 }
 
-// func show_korzina(w http.ResponseWriter, r *http.Request) {
-// 	db := dbConn()
-// 	selDB, err := db.Query("SELECT * FROM korzina ORDER BY id DESC")
+func bokx(w http.ResponseWriter, r *http.Request) {
+	db := dbConn()
+	var selDB *sql.Rows
 
-// 	if err != nil {
-// 		panic(err.Error())
-// 	}
-// 	upld := upfile{}
-// 	res := []upfile{}
-// 	for selDB.Next() {
-// 		var id, price int
-// 		var fname, item_type, path string
-// 		var coment sql.NullString
-// 		var star sql.NullInt32
+	sel, err := db.Query("SELECT * FROM `korzina`; ")
+	selDB = sel
+	if err != nil {
+		panic(err.Error())
+	}
+	upld := upfile{}
+	res := []upfile{}
+	for selDB.Next() {
+		var price, id int
+		var fname, item_type, path string
+		var coment sql.NullString
+		var star sql.NullInt32
 
-// 		err = selDB.Scan(&id, &fname, &item_type, &star, &path, &price, &coment)
-// 		if err != nil {
-// 			panic(err.Error())
-// 		}
-// 		upld.ID = id
-// 		upld.Fname = fname
-// 		upld.Item_type = item_type
-// 		upld.Star = star
-// 		upld.Path = path
-// 		upld.Price = price
-// 		upld.Comment = coment
-// 		res = append(res, upld)
+		err = selDB.Scan(&id, &fname, &item_type, &star, &path, &price, &coment)
+		if err != nil {
+			panic(err.Error())
+		}
+		upld.ID = id
+		upld.Fname = fname
+		upld.Item_type = item_type
+		upld.Star = star
+		upld.Path = path
+		upld.Price = price
+		upld.Comment = coment
+		res = append(res, upld)
 
-// 	}
+	}
+	upld.Count = len(res)
 
-// 	upld.Count = len(res)
+	if upld.Count > 0 {
+		tmpl.ExecuteTemplate(w, "showboy.html", res)
+	} else {
+		tmpl.ExecuteTemplate(w, "showboy.html", nil)
+	}
 
-// 	if upld.Count > 0 {
-// 		tmpl.ExecuteTemplate(w, "showboy.html", res)
-// 	} else {
-// 		tmpl.ExecuteTemplate(w, "showboy.html", nil)
-// 	}
+	db.Close()
 
-// 	db.Close()
+}
 
-// }
 func handleRequest() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/welcome", http.StatusFound)
+	})
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("/login", loginPage)
 	http.HandleFunc("/signup", CreateAconut)
 	http.HandleFunc("/logout", Logout)
-	// http.HandleFunc("/", index)
-	http.HandleFunc("/", upload)
+	http.HandleFunc("/welcome", welcome)
+	http.HandleFunc("/upload", upload)
 	http.HandleFunc("/uploadfiles", uploadFiles)
 	http.HandleFunc("/dele", delete)
 	http.HandleFunc("/star", star)
-	http.HandleFunc("/buy", Buy)
-	// http.HandleFunc("/korzina", show_korzina)
+	http.HandleFunc("/buy", buy)
+	http.HandleFunc("/box", bokx) // http.HandleFunc("/korzina", show_korzina)
 
 	log.Println("Server started on: http://localhost:9000")
 
-	http.ListenAndServe(":9000", nil)
+	log.Fatal(http.ListenAndServe(":9000", nil))
 }
 
 func main() {
